@@ -353,10 +353,10 @@ def getWeatherAlertsNOAA(lat=0, lon=0, useDefaultLatLon=False):
     try:
         alert_data = requests.get(alert_url, timeout=urlTimeoutSeconds)
         if not alert_data.ok:
-            logger.warning("Location:Error fetching weather alerts from NOAA")
+            logger.warning("Location:Error fetching weather alerts from NOAA " + alert_url)
             return ERROR_FETCHING_DATA
     except (requests.exceptions.RequestException):
-        logger.warning("Location:Error fetching weather alerts from NOAA")
+        logger.warning("Location:Error fetching weather alerts from NOAA " + alert_url)
         return ERROR_FETCHING_DATA
     
     alerts = ""
