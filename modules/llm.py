@@ -8,6 +8,7 @@ from modules.log import *
 # https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server
 import requests
 import json
+from matterhook import Webhook
 from googlesearch import search # pip install googlesearch-python
 
 # This is my attempt at a simple RAG implementation it will require some setup
@@ -207,6 +208,15 @@ def llm_query(input, nodeID=0, location_name=None):
             llmQuery = {"model": llmModel, "prompt": modelPrompt, "stream": False}
             # Query the model via Ollama web API
             result = requests.post(ollamaAPI, data=json.dumps(llmQuery))
+
+            tokens = result.json()['prompt_eval_count']
+            worktime = round(int(result.json()['prompt_eval_duration'])/1000/1000/10,2)
+
+            if webhookEnabled:
+                mwh = Webhook(webhookUrl, webhookToken)
+                notification = f":radio: **MeshBot** LLM response: {tokens} tokens in {worktime} seconds"
+                mwh.send(notification)
+
             # Condense the result to just needed
             if result.status_code == 200:
                 result_json = result.json()
