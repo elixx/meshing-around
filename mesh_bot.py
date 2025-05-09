@@ -11,6 +11,7 @@ except ImportError:
 import asyncio
 import time # for sleep, get some when you can :)
 import random
+from matterhook import Webhook
 from modules.log import *
 from modules.system import *
 
@@ -26,6 +27,11 @@ def auto_response(message, snr, rssi, hop, pkiStatus, message_from_id, channel_n
     #Auto response to messages
     message_lower = message.lower()
     bot_response = "🤖I'm sorry, I'm afraid I can't do that."
+
+    if webhookEnabled:
+        mwh = Webhook(webhookUrl, webhookToken)
+        notification = f":radio: ** MeshBot ** - Rx: {get_name_from_number(message_from_id, 'short', deviceID)} - `{message}`"
+        mwh.send(notification)
 
     # Command List processes system.trap_list. system.messageTrap() sends any commands to here
     default_commands = {
@@ -233,7 +239,12 @@ def handle_ping(message_from_id, deviceID,  message, hop, snr, rssi, isDM, chann
     # if not a DM add the username to the beginning of msg
     if not useDMForResponse and not isDM:
         msg = "@" + get_name_from_number(message_from_id, 'short', deviceID) + " " + msg
-            
+
+    if webhookEnabled:
+        mwh = Webhook(webhookUrl, webhookToken)
+        notification = f":radio: ** MeshBot ** - Ping reply to {get_name_from_number(message_from_id, 'short', deviceID)} - `{msg.replace('\n',' ')}`"
+        mwh.send(notification)
+
     return msg
 
 def handle_alertBell(message_from_id, deviceID, message):

@@ -355,6 +355,11 @@ try:
     maxBuffer = config['messagingSettings'].getint('maxBuffer', 220) # default 220
     enableHopLogs = config['messagingSettings'].getboolean('enableHopLogs', False) # default False
 
+    # webhook notifications
+    webhookEnabled = config['webhook'].getboolean('enableWebHook')
+    webhookUrl = config['webhook'].get('notify_url')
+    webhookToken = config['webhook'].get('notify_hook')
+
 except KeyError as e:
     print(f"System: Error reading config file: {e}")
     print(f"System: Check the config.ini against config.template file for missing sections or values.")
