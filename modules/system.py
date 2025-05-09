@@ -1148,6 +1148,10 @@ async def retry_interface(nodeID):
             interface = None
             globals()[f'interface{nodeID}'] = None
             logger.debug(f"System: Retrying Interface{nodeID}")
+            if webhookEnabled:
+                mwh = Webhook(webhookUrl, webhookToken)
+                notification = f":radio: ** MeshBot ** - Retrying interface{nodeID}..."
+                mwh.send(notification)
             interface_type = globals()[f'interface{nodeID}_type']
             if interface_type == 'serial':
                 globals()[f'interface{nodeID}'] = meshtastic.serial_interface.SerialInterface(globals().get(f'port{nodeID}'))
@@ -1156,6 +1160,10 @@ async def retry_interface(nodeID):
             elif interface_type == 'ble':
                 globals()[f'interface{nodeID}'] = meshtastic.ble_interface.BLEInterface(globals().get(f'mac{nodeID}'))
             logger.debug(f"System: Interface{nodeID} Opened!")
+            if webhookEnabled:
+                mwh = Webhook(webhookUrl, webhookToken)
+                notification = f":radio: ** MeshBot ** - interface{nodeID} opened."
+                mwh.send(notification)
             globals()[f'retry_int{nodeID}'] = False
     except Exception as e:
         logger.error(f"System: Error Opening interface{nodeID} on: {e}")
