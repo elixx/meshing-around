@@ -9,6 +9,7 @@ import asyncio
 import random
 import contextlib # for suppressing output on watchdog
 import io # for suppressing output on watchdog
+from matterhook import Webhook
 from modules.log import *
 
 # Global Variables
@@ -1186,6 +1187,10 @@ async def handleSentinel(deviceID):
             detectedNearby += ", " + str(closest_nodes[0]['id'])
             detectedNearby += ", " + decimal_to_hex(closest_nodes[0]['id'])
             detectedNearby += f" at {closest_distance}m"
+            if webhookEnabled:
+                mwh = Webhook(webhookUrl, webhookToken)
+                notification = f":radio: ** MeshBot ** - Sentry: `{detectedNearby}`"
+                mwh.send(notification)
 
     if handleSentinel_loop >= sentry_holdoff and detectedNearby not in ["", None]:
         if closest_nodes and positionMetadata and closest_nodes[0]['id'] in positionMetadata:
@@ -1221,6 +1226,10 @@ async def watchdog():
                 except Exception as e:
                     logger.error(f"System: communicating with interface{i}, trying to reconnect: {e}")
                     globals()[f'retry_int{i}'] = True
+                    if webhookEnabled:
+                        mwh = Webhook(webhookUrl, webhookToken)
+                        notification = f":radio: ** MeshBot ** - interface{i} reconnecting: `{e}`"
+                        mwh.send(notification)
 
                 if not globals()[f'retry_int{i}']:
                     if sentry_enabled:
