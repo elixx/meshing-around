@@ -11,6 +11,7 @@ import json
 from matterhook import Webhook
 from googlesearch import search # pip install googlesearch-python
 
+
 # This is my attempt at a simple RAG implementation it will require some setup
 # you will need to have the RAG data in a folder named rag in the data directory (../data/rag)
 # This is lighter weight and can be used in a standalone environment, needs chromadb
@@ -214,7 +215,7 @@ def llm_query(input, nodeID=0, location_name=None):
 
             if webhookEnabled:
                 mwh = Webhook(webhookUrl, webhookToken)
-                notification = f":radio: **MeshBot** LLM response: {tokens} tokens in {worktime} seconds"
+                notification = f":radio: ** MeshBot ** LLM response: {tokens} tokens in {worktime} seconds"
                 mwh.send(notification)
 
             # Condense the result to just needed
