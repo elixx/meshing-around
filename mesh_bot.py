@@ -1450,6 +1450,9 @@ async def start_rx():
             logger.debug(f"System: SMTP Email Alerting Enabled using IMAP")
         else:
             logger.debug(f"System: SMTP Email Alerting Enabled")
+
+    notify("Initialization complete.", emoji=":checkered_flag:")
+
     if scheduler_enabled:
         # Reminder Scheduler is enabled every Monday at noon send a log message
         schedule.every().monday.at("12:00").do(lambda: logger.info("System: Scheduled Broadcast Enabled Reminder"))
