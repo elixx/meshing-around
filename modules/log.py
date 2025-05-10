@@ -95,6 +95,7 @@ if webhookEnabled:
             self.callback = callback
 
         def emit(self, record):
+            self.format(record)
             self.callback(record.getMessage())
 
     webhook_handler = CustomHandler(callback=send_webhook)
