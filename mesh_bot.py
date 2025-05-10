@@ -290,7 +290,7 @@ def handle_motd(message, message_from_id, isDM):
     elif "$" in message and isAdmin:
         motd = message.split("$")[1]
         MOTD = motd.rstrip()
-        logger.debug(f"System: {message_from_id} changed MOTD: {MOTD}")
+        logger.info(f"System: {message_from_id} changed MOTD: {MOTD}")
         msg = "MOTD changed to: " + MOTD
     else:
         msg = "MOTD: " + MOTD
