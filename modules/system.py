@@ -19,8 +19,6 @@ asyncLoop = asyncio.new_event_loop()
 games_enabled = False
 multiPingList = [{'message_from_id': 0, 'count': 0, 'type': '', 'deviceID': 0, 'channel_number': 0, 'startCount': 0}]
 
-notify("Beginning startup...")
-
 # Ping Configuration
 if ping_enabled:
     # ping, pinging, ack, testing, test, pong
@@ -1153,7 +1151,6 @@ async def retry_interface(nodeID):
             interface = None
             globals()[f'interface{nodeID}'] = None
             logger.debug(f"System: Retrying Interface{nodeID}")
-            notify(f"Retrying interface{nodeID}...")
             interface_type = globals()[f'interface{nodeID}_type']
             if interface_type == 'serial':
                 globals()[f'interface{nodeID}'] = meshtastic.serial_interface.SerialInterface(globals().get(f'port{nodeID}'))
@@ -1162,7 +1159,6 @@ async def retry_interface(nodeID):
             elif interface_type == 'ble':
                 globals()[f'interface{nodeID}'] = meshtastic.ble_interface.BLEInterface(globals().get(f'mac{nodeID}'))
             logger.debug(f"System: Interface{nodeID} Opened!")
-            notify(f"interface{nodeID} opened.")
             globals()[f'retry_int{nodeID}'] = False
     except Exception as e:
         logger.error(f"System: Error Opening interface{nodeID} on: {e}")
@@ -1194,7 +1190,6 @@ async def handleSentinel(deviceID):
             detectedNearby += ", " + str(closest_nodes[0]['id'])
             detectedNearby += ", " + decimal_to_hex(closest_nodes[0]['id'])
             detectedNearby += f" at {closest_distance}m"
-            notify(f"Sentry: `{detectedNearby}`")
 
     if handleSentinel_loop >= sentry_holdoff and detectedNearby not in ["", None]:
         if closest_nodes and positionMetadata and closest_nodes[0]['id'] in positionMetadata:

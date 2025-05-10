@@ -88,6 +88,20 @@ if log_messages_to_file:
     file_handler.setFormatter(logging.Formatter(msgLogFormat))
     msgLogger.addHandler(file_handler)
 
+if webhookEnabled:
+    class CustomHandler(logging.Handler):
+        def __init__(self, callback):
+            super().__init__()
+            self.callback = callback
+
+        def emit(self, record):
+            self.callback(record.getMessage())
+
+    webhook_handler = CustomHandler(callback=send_webhook)
+    webhook_handler.setLevel(logging.DEBUG)
+    webhook_handler.setFormatter(plainFormatter)
+    logger.addHandler(webhook_handler)
+
 # Pretty Timestamp
 def getPrettyTime(seconds):
     # convert unix time to minutes, hours, or days, or years for simple display

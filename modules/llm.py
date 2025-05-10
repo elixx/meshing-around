@@ -211,7 +211,7 @@ def llm_query(input, nodeID=0, location_name=None):
 
             tokens = result.json()['prompt_eval_count']
             worktime = round(int(result.json()['prompt_eval_duration'])/1000/1000/10,2)
-            notify(f"LLM response: {tokens} tokens in {worktime} seconds", emoji='robot')
+            send_webhook(f"LLM response: {tokens} tokens in {worktime} seconds", emoji='robot')
 
             # Condense the result to just needed
             if result.status_code == 200:

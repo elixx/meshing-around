@@ -28,8 +28,6 @@ def auto_response(message, snr, rssi, hop, pkiStatus, message_from_id, channel_n
     message_lower = message.lower()
     bot_response = "🤖I'm sorry, I'm afraid I can't do that."
 
-    notify(f"Rx: {get_name_from_number(message_from_id, 'short', deviceID)} - `{message}`")
-
     # Command List processes system.trap_list. system.messageTrap() sends any commands to here
     default_commands = {
     "ack": lambda: handle_ping(message_from_id, deviceID, message, hop, snr, rssi, isDM, channel_number),
