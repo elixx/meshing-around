@@ -9,7 +9,6 @@ import asyncio
 import random
 import contextlib # for suppressing output on watchdog
 import io # for suppressing output on watchdog
-from matterhook import Webhook
 from modules.log import *
 
 # Global Variables
