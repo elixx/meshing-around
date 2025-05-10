@@ -1446,7 +1446,7 @@ async def start_rx():
         else:
             logger.debug(f"System: SMTP Email Alerting Enabled")
 
-    notify("Initialization complete.", emoji=":checkered_flag:")
+    send_webhook("Initialization complete.", emoji=":checkered_flag:")
 
     if scheduler_enabled:
         # Reminder Scheduler is enabled every Monday at noon send a log message
