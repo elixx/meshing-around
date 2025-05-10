@@ -1253,3 +1253,15 @@ async def watchdog():
                 except Exception as e:
                     logger.error(f"System: retrying interface{i}: {e}")
 
+
+def handle_fortune():
+    try:
+        from subprocess import Popen, PIPE
+        res = Popen(['fortune', '-s'],stdout=PIPE)
+        fortunetext = res.stdout.read()
+        fortunetext = fortunetext.replace("\n", " ")
+        while '  ' in fortunetext:
+            fortunetext = fortunetext.replace("  ", " ")
+    except Exception as e:
+        fortunetext = str(e)
+    return fortunetext.strip()
