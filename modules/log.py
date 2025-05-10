@@ -10,7 +10,7 @@ if not LOGGING_LEVEL:
 
 LOGGING_LEVEL = getattr(logging, LOGGING_LEVEL)
 
-def notify(message, emoji="radio"):
+def send_webhook(message, emoji="radio"):
     if webhookEnabled:
         mwh = Webhook(webhookUrl, webhookToken)
         notification = f":{emoji}: **MeshBot**: {message}"

@@ -850,7 +850,7 @@ def exit_handler():
         save_bbsdm()
         logger.debug(f"System: BBS Messages Saved")
     logger.debug(f"System: Exiting...")
-    notify("Stopping...", emoji="stop_sign")
+    send_webhook("Stopping...", emoji="stop_sign")
     asyncLoop.stop()
     asyncLoop.close()
     exit (0)
