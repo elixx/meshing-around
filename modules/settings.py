@@ -356,9 +356,10 @@ try:
     enableHopLogs = config['messagingSettings'].getboolean('enableHopLogs', False) # default False
 
     # webhook notifications
-    webhookEnabled = config['webhook'].getboolean('enableWebHook')
+    webhookEnabled = config['webhook'].getboolean('enableWebHook',False)
     webhookUrl = config['webhook'].get('notify_url')
     webhookToken = config['webhook'].get('notify_hook')
+    webhookLevel = config['webhook'].get('notify_level','CRITICAL')
 
 except KeyError as e:
     print(f"System: Error reading config file: {e}")
