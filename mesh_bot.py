@@ -56,6 +56,7 @@ def auto_response(message, snr, rssi, hop, pkiStatus, message_from_id, channel_n
     "ea": lambda: handle_emergency_alerts(message, message_from_id, deviceID),
     "ealert": lambda: handle_emergency_alerts(message, message_from_id, deviceID),
     "email:": lambda: handle_email(message_from_id, message),
+    "fortune": lambda: handle_fortune(),
     "games": lambda: gamesCmdList,
     "globalthermonuclearwar": lambda: handle_gTnW(),
     "golfsim": lambda: handleGolf(message, message_from_id, deviceID),

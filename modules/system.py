@@ -240,6 +240,9 @@ if file_monitor_enabled or read_news_enabled or bee_enabled:
     if bee_enabled:
         trap_list = trap_list + ("🐝",)
 
+# Drastical Mods
+trap_list = trap_list + ('fortune','news',)
+
 # clean up the help message
 help_message = help_message.split(", ")
 help_message.sort()
