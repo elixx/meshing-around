@@ -296,4 +296,9 @@ maxBuffer = 200
 #Enable Extra logging of Hop count data
 enableHopLogs = False
 
-
+[webhook]
+# Send logs as webhook messages
+enableWebhook = False
+#notify_url = http://192.168.0.1:8888
+#notify_hook = FFFFFFFFFFFFFFFFFFFFFFF
+#notify_level = INFO

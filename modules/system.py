@@ -283,7 +283,7 @@ for i in range(1, 10):
     if globals().get(f'interface{i}') and globals().get(f'interface{i}_enabled'):
         try:
             globals()[f'myNodeNum{i}'] = globals()[f'interface{i}'].getMyNodeInfo()['num']
-            logger.debug(f"System: Initalized Radio Device{i} Node Number: {globals()[f'myNodeNum{i}']}")
+            logger.info(f"System: Initalized Radio Device{i} Node Number: {globals()[f'myNodeNum{i}']}")
         except Exception as e:
             logger.critical(f"System: critical error initializing interface{i} {e}")
     else:
@@ -1225,7 +1225,6 @@ async def watchdog():
                 except Exception as e:
                     logger.error(f"System: communicating with interface{i}, trying to reconnect: {e}")
                     globals()[f'retry_int{i}'] = True
-                    notify(f":radio: ** MeshBot ** - interface{i} reconnecting: `{e}`")
 
                 if not globals()[f'retry_int{i}']:
                     if sentry_enabled:

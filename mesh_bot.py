@@ -290,7 +290,7 @@ def handle_motd(message, message_from_id, isDM):
     elif "$" in message and isAdmin:
         motd = message.split("$")[1]
         MOTD = motd.rstrip()
-        logger.debug(f"System: {message_from_id} changed MOTD: {MOTD}")
+        logger.info(f"System: {message_from_id} changed MOTD: {MOTD}")
         msg = "MOTD changed to: " + MOTD
     else:
         msg = "MOTD: " + MOTD
@@ -1446,7 +1446,7 @@ async def start_rx():
         else:
             logger.debug(f"System: SMTP Email Alerting Enabled")
 
-    send_webhook("Initialization complete.", emoji=":checkered_flag:")
+    send_webhook("Initialization complete.", emoji="checkered_flag")
 
     if scheduler_enabled:
         # Reminder Scheduler is enabled every Monday at noon send a log message
