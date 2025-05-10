@@ -481,7 +481,7 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
             logger.warning(f"System: iPAWS fetching IPAWS alerts from FEMA: {alert_url}\n{alert_data}")
             return ERROR_FETCHING_DATA
     except (requests.exceptions.RequestException):
-        logger.warning(f"System: iPAWS fetching IPAWS alerts from FEMA: {alert_url}\n{alert_data}")
+        logger.warning(f"System: iPAWS fetching IPAWS alerts from FEMA: {alert_url}")
         return ERROR_FETCHING_DATA
     
     # main feed bulletins
