@@ -93,13 +93,17 @@ if webhookEnabled:
         def __init__(self, callback):
             super().__init__()
             self.callback = callback
-
+            self.ansi_escape = re.compile(r'\x1b\[([0-9]+)(;[0-9]+)*m')
+        def format(self, record):
+            message = super().format(record).strip()
+            return self.ansi_escape.sub('', message)
         def emit(self, record):
-            self.callback(record.getMessage())
+            self.callback(self.format(record))
 
+    webhookFormat = '%(levelname)8s - %(message)s'
     webhook_handler = CustomHandler(callback=send_webhook)
-    webhook_handler.setLevel(logging.DEBUG)
-    webhook_handler.setFormatter(plainFormatter)
+    webhook_handler.setLevel(eval("logging."+webhookLevel))
+    webhook_handler.setFormatter(plainFormatter(webhookFormat))
     logger.addHandler(webhook_handler)
 
 # Pretty Timestamp

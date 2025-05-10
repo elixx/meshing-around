@@ -1252,7 +1252,7 @@ def handle_fortune():
     try:
         from subprocess import Popen, PIPE
         res = Popen(['fortune', '-s'],stdout=PIPE)
-        fortunetext = res.stdout.read()
+        fortunetext = res.stdout.read().decode('utf-8')
         fortunetext = fortunetext.replace("\n", " ")
         while '  ' in fortunetext:
             fortunetext = fortunetext.replace("  ", " ")
