@@ -99,7 +99,7 @@ if webhookEnabled:
 
     webhook_handler = CustomHandler(callback=send_webhook)
     webhook_handler.setLevel(logging.DEBUG)
-    webhook_handler.setFormatter(plainFormatter)
+    webhook_handler.setFormatter(plainFormatter(logFormat))
     logger.addHandler(webhook_handler)
 
 # Pretty Timestamp
