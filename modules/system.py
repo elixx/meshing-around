@@ -237,6 +237,9 @@ if file_monitor_enabled or read_news_enabled or bee_enabled:
     if bee_enabled:
         trap_list = trap_list + ("🐝",)
 
+# Drastical Mods
+trap_list = trap_list + ('fortune','news',)
+
 # clean up the help message
 help_message = help_message.split(", ")
 help_message.sort()
@@ -846,7 +849,8 @@ def exit_handler():
         save_bbsdb()
         save_bbsdm()
         logger.debug(f"System: BBS Messages Saved")
-    logger.debug(f"System: Exiting")
+    logger.debug(f"System: Exiting...")
+    send_webhook("Stopping...", emoji="stop_sign")
     asyncLoop.stop()
     asyncLoop.close()
     exit (0)
@@ -1135,12 +1139,12 @@ async def retry_interface(nodeID):
         except Exception as e:
             logger.error(f"System: closing interface{nodeID}: {e}")
 
-    logger.debug(f"System: Retrying interface{nodeID} in 15 seconds")
+    logger.debug(f"System: Retrying interface{nodeID} in 1 second")
     if max_retry_count == 0:
         logger.critical(f"System: Max retry count reached for interface{nodeID}")
         exit_handler()
 
-    await asyncio.sleep(15)
+    await asyncio.sleep(1)
 
     try:
         if retry_int:
@@ -1221,6 +1225,7 @@ async def watchdog():
                 except Exception as e:
                     logger.error(f"System: communicating with interface{i}, trying to reconnect: {e}")
                     globals()[f'retry_int{i}'] = True
+                    notify(f":radio: ** MeshBot ** - interface{i} reconnecting: `{e}`")
 
                 if not globals()[f'retry_int{i}']:
                     if sentry_enabled:
@@ -1242,3 +1247,15 @@ async def watchdog():
                 except Exception as e:
                     logger.error(f"System: retrying interface{i}: {e}")
 
+
+def handle_fortune():
+    try:
+        from subprocess import Popen, PIPE
+        res = Popen(['fortune', '-s'],stdout=PIPE)
+        fortunetext = res.stdout.read()
+        fortunetext = fortunetext.replace("\n", " ")
+        while '  ' in fortunetext:
+            fortunetext = fortunetext.replace("  ", " ")
+    except Exception as e:
+        fortunetext = str(e)
+    return fortunetext.strip()
