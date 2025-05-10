@@ -102,7 +102,7 @@ if webhookEnabled:
 
     webhookFormat = '%(levelname)8s - %(message)s'
     webhook_handler = CustomHandler(callback=send_webhook)
-    webhook_handler.setLevel(logging.DEBUG)
+    webhook_handler.setLevel(eval("logging."+webhookLevel))
     webhook_handler.setFormatter(plainFormatter(webhookFormat))
     logger.addHandler(webhook_handler)
 
