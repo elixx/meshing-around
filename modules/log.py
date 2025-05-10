@@ -99,7 +99,7 @@ if webhookEnabled:
             self.callback(record.getMessage())
 
     webhook_handler = CustomHandler(callback=send_webhook)
-    webhook_handler.setLevel(logging.DEBUG)
+    webhook_handler.setLevel(logging.INFO)
     webhook_handler.setFormatter(plainFormatter(logFormat))
     logger.addHandler(webhook_handler)
 
