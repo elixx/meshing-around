@@ -11,6 +11,7 @@ except ImportError:
 import asyncio
 import time # for sleep, get some when you can :)
 import random
+from matterhook import Webhook
 from modules.log import *
 from modules.system import *
 
@@ -53,6 +54,7 @@ def auto_response(message, snr, rssi, hop, pkiStatus, message_from_id, channel_n
     "ea": lambda: handle_emergency_alerts(message, message_from_id, deviceID),
     "ealert": lambda: handle_emergency_alerts(message, message_from_id, deviceID),
     "email:": lambda: handle_email(message_from_id, message),
+    "fortune": lambda: handle_fortune(),
     "games": lambda: gamesCmdList,
     "globalthermonuclearwar": lambda: handle_gTnW(),
     "golfsim": lambda: handleGolf(message, message_from_id, deviceID),
@@ -67,6 +69,7 @@ def auto_response(message, snr, rssi, hop, pkiStatus, message_from_id, channel_n
     "messages": lambda: handle_messages(message, deviceID, channel_number, msg_history, publicChannel, isDM),
     "moon": lambda: handle_moon(message_from_id, deviceID, channel_number),
     "motd": lambda: handle_motd(message, message_from_id, isDM),
+    "news": lambda: read_news(),
     "ping": lambda: handle_ping(message_from_id, deviceID, message, hop, snr, rssi, isDM, channel_number),
     "pinging": lambda: handle_ping(message_from_id, deviceID, message, hop, snr, rssi, isDM, channel_number),
     "pong": lambda: "🏓PING!!🛜",
@@ -232,7 +235,6 @@ def handle_ping(message_from_id, deviceID,  message, hop, snr, rssi, isDM, chann
     # if not a DM add the username to the beginning of msg
     if not useDMForResponse and not isDM:
         msg = "@" + get_name_from_number(message_from_id, 'short', deviceID) + " " + msg
-            
     return msg
 
 def handle_alertBell(message_from_id, deviceID, message):
@@ -1443,6 +1445,9 @@ async def start_rx():
             logger.debug(f"System: SMTP Email Alerting Enabled using IMAP")
         else:
             logger.debug(f"System: SMTP Email Alerting Enabled")
+
+    send_webhook("Initialization complete.", emoji=":checkered_flag:")
+
     if scheduler_enabled:
         # Reminder Scheduler is enabled every Monday at noon send a log message
         schedule.every().monday.at("12:00").do(lambda: logger.info("System: Scheduled Broadcast Enabled Reminder"))
@@ -1495,7 +1500,12 @@ async def start_rx():
 
         # Send WX every Morning at 08:00 using handle_wxc function to channel 2 on device 1
         #schedule.every().day.at("08:00").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 2, 0, 1))
-        
+
+        # Testing
+        schedule.every().day.at("06:30").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 0, 0, 1))
+        schedule.every().day.at("11:00").do(lambda: send_message(handle_wxc(0, 1, 'sysinfo'), 1, 0, 1))
+
+
         # Send Weather Channel Notice Wed. Noon on channel 2, device 1
         #schedule.every().wednesday.at("12:00").do(lambda: send_message("Weather alerts available on 'Alerts' channel with default 'AQ==' key.", 2, 0, 1))
 

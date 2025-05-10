@@ -21,7 +21,7 @@ ping_enabled = True # ping feature to respond to pings, ack's etc.
 sitrep_enabled = True # sitrep feature to respond to sitreps
 lastHamLibAlert = 0 # last alert from hamlib
 lastFileAlert = 0 # last alert from file monitor
-max_retry_count1 = 4 # max retry count for interface 1
+max_retry_count1 = 10 # max retry count for interface 1
 max_retry_count2 = 4 # max retry count for interface 2
 retry_int1 = False
 retry_int2 = False
@@ -354,6 +354,11 @@ try:
     wantAck = config['messagingSettings'].getboolean('wantAck', False) # default False
     maxBuffer = config['messagingSettings'].getint('maxBuffer', 220) # default 220
     enableHopLogs = config['messagingSettings'].getboolean('enableHopLogs', False) # default False
+
+    # webhook notifications
+    webhookEnabled = config['webhook'].getboolean('enableWebHook')
+    webhookUrl = config['webhook'].get('notify_url')
+    webhookToken = config['webhook'].get('notify_hook')
 
 except KeyError as e:
     print(f"System: Error reading config file: {e}")

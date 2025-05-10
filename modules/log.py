@@ -1,6 +1,7 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import re
+from matterhook import Webhook
 from datetime import datetime
 from modules.settings import *
 # if LOGGING_LEVEL is not set in settings.py, default to DEBUG
@@ -8,6 +9,12 @@ if not LOGGING_LEVEL:
     LOGGING_LEVEL = "DEBUG"
 
 LOGGING_LEVEL = getattr(logging, LOGGING_LEVEL)
+
+def send_webhook(message, emoji="radio"):
+    if webhookEnabled:
+        mwh = Webhook(webhookUrl, webhookToken)
+        notification = f":{emoji}: **MeshBot**: {message}"
+        mwh.send(notification)
 
 class CustomFormatter(logging.Formatter):
     grey = '\x1b[38;21m'
@@ -80,6 +87,20 @@ if log_messages_to_file:
     file_handler.setLevel(logging.INFO) # INFO used for messages to disk
     file_handler.setFormatter(logging.Formatter(msgLogFormat))
     msgLogger.addHandler(file_handler)
+
+if webhookEnabled:
+    class CustomHandler(logging.Handler):
+        def __init__(self, callback):
+            super().__init__()
+            self.callback = callback
+
+        def emit(self, record):
+            self.callback(record.getMessage())
+
+    webhook_handler = CustomHandler(callback=send_webhook)
+    webhook_handler.setLevel(logging.DEBUG)
+    webhook_handler.setFormatter(plainFormatter)
+    logger.addHandler(webhook_handler)
 
 # Pretty Timestamp
 def getPrettyTime(seconds):

@@ -10,6 +10,7 @@ import requests
 import json
 from googlesearch import search # pip install googlesearch-python
 
+
 # This is my attempt at a simple RAG implementation it will require some setup
 # you will need to have the RAG data in a folder named rag in the data directory (../data/rag)
 # This is lighter weight and can be used in a standalone environment, needs chromadb
@@ -207,6 +208,11 @@ def llm_query(input, nodeID=0, location_name=None):
             llmQuery = {"model": llmModel, "prompt": modelPrompt, "stream": False}
             # Query the model via Ollama web API
             result = requests.post(ollamaAPI, data=json.dumps(llmQuery))
+
+            tokens = result.json()['prompt_eval_count']
+            worktime = round(int(result.json()['prompt_eval_duration'])/1000/1000/10,2)
+            send_webhook(f"LLM response: {tokens} tokens in {worktime} seconds", emoji='robot')
+
             # Condense the result to just needed
             if result.status_code == 200:
                 result_json = result.json()
