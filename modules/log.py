@@ -100,7 +100,8 @@ if webhookEnabled:
         def emit(self, record):
             self.callback(self.format(record))
 
-    webhookFormat = '%(levelname)8s - %(message)s'
+    #webhookFormat = '%(levelname)8s - %(message)s'
+    webhookFormat = '%(message)s'
     webhook_handler = CustomHandler(callback=send_webhook)
     webhook_handler.setLevel(eval("logging."+webhookLevel))
     webhook_handler.setFormatter(plainFormatter(webhookFormat))
