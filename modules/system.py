@@ -1139,7 +1139,7 @@ async def retry_interface(nodeID):
         except Exception as e:
             logger.error(f"System: closing interface{nodeID}: {e}")
 
-    logger.warning(f"System: Retrying interface{nodeID} in 1 second")
+    logger.debug(f"System: Retrying interface{nodeID} in 1 second")
     if max_retry_count == 0:
         logger.critical(f"System: Max retry count reached for interface{nodeID}")
         exit_handler()
@@ -1150,7 +1150,7 @@ async def retry_interface(nodeID):
         if retry_int:
             interface = None
             globals()[f'interface{nodeID}'] = None
-            logger.warning(f"System: Retrying Interface{nodeID}")
+            logger.debug(f"System: Retrying Interface{nodeID}")
             interface_type = globals()[f'interface{nodeID}_type']
             if interface_type == 'serial':
                 globals()[f'interface{nodeID}'] = meshtastic.serial_interface.SerialInterface(globals().get(f'port{nodeID}'))

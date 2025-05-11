@@ -478,10 +478,10 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
     try:
         alert_data = requests.get(alert_url, timeout=urlTimeoutSeconds)
         if not alert_data.ok:
-            logger.warning(f"System: iPAWS fetching IPAWS alerts from FEMA: {alert_url}\n{alert_data}")
+            logger.debug(f"System: fetching iPAWS alerts from FEMA: {alert_url}")
             return ERROR_FETCHING_DATA
     except (requests.exceptions.RequestException):
-        logger.warning(f"System: iPAWS fetching IPAWS alerts from FEMA: {alert_url}")
+        logger.debug(f"System: fetching iPAWS alerts from FEMA: {alert_url}")
         return ERROR_FETCHING_DATA
     
     # main feed bulletins
@@ -554,9 +554,9 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
                     'geocode_value': geocode_value,
                     'description': description
                 })
-            # else:
-            #     # these are discarded some day but logged for debugging currently
-            #     logger.debug(f"Debug iPAWS: Type:{alertType} Code:{alertCode} Desc:{areaDesc} GeoType:{geocode_type} GeoVal:{geocode_value}, Headline:{headline}")
+            else:
+                # these are discarded some day but logged for debugging currently
+                logger.debug(f"Debug iPAWS: Type:{alertType} Code:{alertCode} Desc:{areaDesc} GeoType:{geocode_type} GeoVal:{geocode_value}, Headline:{headline}")
     
     # return the numWxAlerts of alerts
     if len(alerts) > 0:
