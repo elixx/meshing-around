@@ -1503,7 +1503,7 @@ async def start_rx():
 
         # Testing
         schedule.every().day.at("06:30").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 0, 0, 1))
-        schedule.every().day.at("11:00").do(lambda: send_message(handle_wxc(0, 1, 'sysinfo'), 1, 0, 1))
+        schedule.every(6).hours.do(lambda: send_message(handle_wxc(0, 1, 'sysinfo'), 1, 0, 1))
 
 
         # Send Weather Channel Notice Wed. Noon on channel 2, device 1
