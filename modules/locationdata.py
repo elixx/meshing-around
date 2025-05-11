@@ -65,7 +65,7 @@ def where_am_i(lat=0, lon=0, short=False, zip=False):
             whereIam += f", Grid: " + grid
         return whereIam
     except Exception as e:
-        logger.debug("Location:Error fetching location data with whereami, likely network error")
+        logger.warning("Location:Error fetching location data with whereami, likely network error")
         return ERROR_FETCHING_DATA
     
 def getRepeaterBook(lat=0, lon=0):
