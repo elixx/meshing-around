@@ -13,7 +13,10 @@ LOGGING_LEVEL = getattr(logging, LOGGING_LEVEL)
 def send_webhook(message, emoji="radio"):
     if webhookEnabled:
         mwh = Webhook(webhookUrl, webhookToken)
-        notification = f":{emoji}: **MeshBot**: {message}"
+        message = message.replace("Device","Dev")
+        message = message.replace("Channel","Ch")
+        message = message.replace("Recieved","Rx")
+        notification = f":{emoji}: **MeshBot** {message}"
         mwh.send(notification)
 
 class CustomFormatter(logging.Formatter):
