@@ -16,6 +16,7 @@ def send_webhook(message, emoji="radio"):
         message = message.replace("Device","Dev")
         message = message.replace("Channel","Ch")
         message = message.replace("Recieved","Rx")
+        message = message.replace("Received", "Rx")
         notification = f":{emoji}: **MeshBot** {message}"
         mwh.send(notification)
 
