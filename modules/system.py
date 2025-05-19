@@ -567,6 +567,11 @@ def messageChunker(message):
 def send_message(message, ch, nodeid=0, nodeInt=1, bypassChuncking=False):
     # Send a message to a channel or DM
     interface = globals()[f'interface{nodeInt}']
+
+    if interface is None:
+        logger.error(f"Call to send_message while interface is None! {message}")
+        return False
+
     # Check if the message is empty
     if message == "" or message == None or len(message) == 0:
         return False
