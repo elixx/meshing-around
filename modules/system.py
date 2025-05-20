@@ -567,6 +567,11 @@ def messageChunker(message):
 def send_message(message, ch, nodeid=0, nodeInt=1, bypassChuncking=False):
     # Send a message to a channel or DM
     interface = globals()[f'interface{nodeInt}']
+
+    if interface is None:
+        logger.error(f"Call to send_message while interface is None! {message}")
+        return False
+
     # Check if the message is empty
     if message == "" or message == None or len(message) == 0:
         return False
@@ -1139,7 +1144,7 @@ async def retry_interface(nodeID):
         except Exception as e:
             logger.error(f"System: closing interface{nodeID}: {e}")
 
-    logger.warning(f"System: Retrying interface{nodeID} in 1 second")
+    logger.debug(f"System: Retrying interface{nodeID} in 1 second")
     if max_retry_count == 0:
         logger.critical(f"System: Max retry count reached for interface{nodeID}")
         exit_handler()
@@ -1150,7 +1155,7 @@ async def retry_interface(nodeID):
         if retry_int:
             interface = None
             globals()[f'interface{nodeID}'] = None
-            logger.warning(f"System: Retrying Interface{nodeID}")
+            logger.debug(f"System: Retrying Interface{nodeID}")
             interface_type = globals()[f'interface{nodeID}_type']
             if interface_type == 'serial':
                 globals()[f'interface{nodeID}'] = meshtastic.serial_interface.SerialInterface(globals().get(f'port{nodeID}'))
