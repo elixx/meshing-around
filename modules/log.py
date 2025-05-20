@@ -12,9 +12,19 @@ LOGGING_LEVEL = getattr(logging, LOGGING_LEVEL)
 
 def send_webhook(message, emoji="radio"):
     if webhookEnabled:
-        mwh = Webhook(webhookUrl, webhookToken)
-        notification = f":{emoji}: **MeshBot**: {message}"
-        mwh.send(notification)
+        try:
+            mwh = Webhook(webhookUrl, webhookToken)
+            message = message.replace("Device","Dev")
+            message = message.replace("Channel","Ch")
+            message = message.replace("Recieved","Rx")
+            message = message.replace("Received", "Rx")
+            message = message.replace("Sending", "Tx")
+            message = message.replace("Interface", "Int")
+            message = message.replace("interface", "int")
+            notification = f":{emoji}: **MeshBot** {message}"
+            mwh.send(notification)
+        except Exception as e:
+            print(f"Error sending webook: {e}")
 
 class CustomFormatter(logging.Formatter):
     grey = '\x1b[38;21m'

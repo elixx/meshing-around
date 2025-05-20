@@ -68,7 +68,7 @@ def send_email(to_email, message, nodeID=0):
         server.send_message(msg)
         server.quit()
 
-        logger.info("System: Email sent to: " + to_email[:-6])
+        logger.info("System: Email sent to: " + to_email)
         return True
     except Exception as e:
         logger.warning(f"System: Failed to send email: {str(e)}")
