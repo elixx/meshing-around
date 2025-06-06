@@ -828,7 +828,7 @@ def onDisconnect(interface):
     rxType = type(interface).__name__
     if rxType in ['SerialInterface', 'TCPInterface', 'BLEInterface']:
         identifier = interface.__dict__.get('devPath', interface.__dict__.get('hostname', 'BLE'))
-        logger.critical(f"System: Lost Connection to Device {identifier}")
+        logger.debug(f"System: Lost Connection to Device {identifier}")
         for i in range(1, 10):
             if globals().get(f'interface{i}_enabled'):
                 if (rxType == 'SerialInterface' and globals().get(f'port{i}') in identifier) or \
