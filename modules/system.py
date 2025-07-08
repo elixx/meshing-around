@@ -1150,12 +1150,12 @@ async def retry_interface(nodeID):
         except Exception as e:
             logger.error(f"System: closing interface{nodeID}: {e}")
 
-    logger.debug(f"System: Retrying interface{nodeID} in 1 second")
+    logger.debug(f"System: Retrying interface{nodeID} in 3 seconds")
     if max_retry_count == 0:
         logger.critical(f"System: Max retry count reached for interface{nodeID}")
         exit_handler()
 
-    await asyncio.sleep(1)
+    await asyncio.sleep(3)
 
     try:
         if retry_int:
