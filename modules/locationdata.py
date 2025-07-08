@@ -467,6 +467,7 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
     # get the latest IPAWS alert from FEMA
     alert = ''
     alerts = []
+    linked_data = ''
     
     # set the API URL for IPAWS
     namespace = "urn:oasis:names:tc:emergency:cap:1.2"
@@ -496,15 +497,22 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
                 link += "?pin=" + ipawsPIN
             # get the linked alert data from FEMA
             linked_data = requests.get(link, timeout=urlTimeoutSeconds)
-            if not linked_data.ok:
+            if not linked_data.ok or not linked_data.text.strip():
+                # if the linked data is not ok, skip this alert
                 #logger.warning(f"System: iPAWS Error fetching linked alert data from {link}")
                 continue
+            else:
+                linked_xml = xml.dom.minidom.parseString(linked_data.text)
+                # this alert is a full CAP alert
         except (requests.exceptions.RequestException):
             logger.warning(f"System: iPAWS Error fetching embedded alert data from {link}")
             continue
-        
-        # this alert is a full CAP alert
-        linked_xml = xml.dom.minidom.parseString(linked_data.text)
+        except xml.parsers.expat.ExpatError:
+            logger.warning(f"System: iPAWS Error parsing XML from {link}")
+            continue
+        except Exception as e:
+            logger.debug(f"System: iPAWS Error processing alert data from {link}: {e}")
+            continue
 
         for info in linked_xml.getElementsByTagName("info"):
             # extract values from XML
@@ -539,10 +547,15 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
             if (sameVal in mySAME) or (geocode_value in mySAME):
                 # ignore the FEMA test alerts
                 if ignoreFEMAenable:
+                    ignore_alert = False
                     for word in ignoreFEMAwords:
                         if word.lower() in headline.lower():
                             logger.debug(f"System: Ignoring FEMA Alert: {headline} containing {word} at {areaDesc}")
-                            continue
+                            ignore_alert = True
+                            break
+
+                    if ignore_alert:
+                        continue
 
                 # add to alerts list
                 alerts.append({
@@ -648,10 +661,10 @@ def get_volcano_usgs(lat=0, lon=0):
     try:
         volcano_data = requests.get(usgs_volcano_url, timeout=urlTimeoutSeconds)
         if not volcano_data.ok:
-            logger.warning("System: USGS fetching volcano alerts from USGS")
+            logger.warning("System: Issue with fetching volcano alerts from USGS")
             return ERROR_FETCHING_DATA
     except (requests.exceptions.RequestException):
-        logger.warning("System: USGS fetching volcano alerts from USGS")
+        logger.warning("System: Issue with fetching volcano alerts from USGS")
         return ERROR_FETCHING_DATA
     volcano_json = volcano_data.json()
     # extract alerts from main feed

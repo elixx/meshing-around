@@ -147,6 +147,12 @@ def llm_query(input, nodeID=0, location_name=None):
     googleResults = []
     if not location_name:
         location_name = "no location provided "
+    
+    # remove askai: and ask: from the input
+    for trap in trap_list_llm:
+        if input.lower().startswith(trap):
+            input = input[len(trap):].strip()
+            break
 
     # add the naughty list here to stop the function before we continue
     # add a list of allowed nodes only to use the function

@@ -987,6 +987,12 @@ def consumeMetadata(packet, rxNode=0):
         
                 for key in keys:
                     positionMetadata[nodeID][key] = position_data.get(key, 0)
+
+                # if altitude is over 2000 send a log and message for high-flying nodes and not in highfly_ignoreList
+                if position_data.get('altitude', 0) > highfly_altitude and highfly_enabled and str(nodeID) not in highfly_ignoreList:
+                    logger.info(f"System: High Altitude {position_data['altitude']}m on Device: {rxNode} NodeID: {nodeID}")
+                    send_message(f"High Altitude {position_data['altitude']}m on Device:{rxNode} Node:{get_name_from_number(nodeID,'short',rxNode)}", highfly_channel, 0, rxNode)
+                    time.sleep(responseDelay)
         
                 # Keep the positionMetadata dictionary at a maximum size of 20
                 if len(positionMetadata) > 20:
@@ -1105,7 +1111,7 @@ async def handleFileWatcher():
                 # if fileWatchBroadcastCh list contains multiple channels, broadcast to all
                 if type(file_monitor_broadcastCh) is list:
                     for ch in file_monitor_broadcastCh:
-                        if antiSpam and ch != publicChannel:
+                        if antiSpam and int(ch) != publicChannel:
                             send_message(msg, int(ch), 0, 1)
                             time.sleep(responseDelay)
                             if multiple_interface:
@@ -1160,7 +1166,7 @@ async def retry_interface(nodeID):
             if interface_type == 'serial':
                 globals()[f'interface{nodeID}'] = meshtastic.serial_interface.SerialInterface(globals().get(f'port{nodeID}'))
             elif interface_type == 'tcp':
-                globals()[f'interface{nodeID}'] = meshtastic.tcp_interface.TCPInterface(globals().get(f'hostname{nodeID}'))
+                globals()[f'interface{nodeID}'] = meshtastic.tcp_interface.TCPInterface(globals().get(f'host{nodeID}'))
             elif interface_type == 'ble':
                 globals()[f'interface{nodeID}'] = meshtastic.ble_interface.BLEInterface(globals().get(f'mac{nodeID}'))
             logger.warning(f"System: Interface{nodeID} Opened!")

@@ -222,6 +222,7 @@ try:
     llm_enabled = config['general'].getboolean('ollama', False) # https://ollama.com
     llmModel = config['general'].get('ollamaModel', 'gemma2:2b') # default gemma2:2b
     ollamaHostName = config['general'].get('ollamaHostName', 'http://localhost:11434') # default localhost
+    llmReplyToNonCommands = config['general'].getboolean('llmReplyToNonCommands', True)
     # emergency response
     emergency_responder_enabled = config['emergencyHandler'].getboolean('enabled', False)
     emergency_responder_alert_channel = config['emergencyHandler'].getint('alert_channel', 2) # default 2
@@ -235,6 +236,10 @@ try:
     sentryIgnoreList = config['sentry'].get('sentryIgnoreList', '').split(',')
     sentry_radius = config['sentry'].getint('SentryRadius', 100) # default 100 meters
     email_sentry_alerts = config['sentry'].getboolean('emailSentryAlerts', False) # default False
+    highfly_enabled = config['sentry'].getboolean('highFlyingAlert', True) # default True
+    highfly_altitude = config['sentry'].getint('highFlyingAlertAltitude', 2000) # default 2000 meters
+    highfly_channel = config['sentry'].getint('highFlyingAlertChannel', 2) # default 2
+    highfly_ignoreList = config['sentry'].get('highFlyingIgnoreList', '').split(',') # default empty
 
     # location
     location_enabled = config['location'].getboolean('enabled', True)
@@ -285,7 +290,7 @@ try:
     # qrz hello
     qrz_hello_enabled = config['qrz'].getboolean('enabled', False)
     qrz_db = config['qrz'].get('qrz_db', 'data/qrz.db')
-    qrz_hello_string = config['qrz'].get('qrz_hello_string', 'send CMD or DM me for more info.')
+    qrz_hello_string = config['qrz'].get('qrz_hello_string', 'MeshBot says Hello! DM for more info.')
     train_qrz = config['qrz'].getboolean('training', True)
     
     # E-Mail Settings
@@ -330,7 +335,7 @@ try:
     # file monitor
     file_monitor_enabled = config['fileMon'].getboolean('filemon_enabled', False)
     file_monitor_file_path = config['fileMon'].get('file_path', 'alert.txt') # default alert.txt
-    file_monitor_broadcastCh = config['fileMon'].getint('broadcastCh', 2) # default 2
+    file_monitor_broadcastCh = config['fileMon'].get('broadcastCh', '2').split(',') # default Channel 2
     read_news_enabled = config['fileMon'].getboolean('enable_read_news', False) # default disabled
     news_file_path = config['fileMon'].get('news_file_path', 'news.txt') # default news.txt
     news_random_line_only = config['fileMon'].getboolean('news_random_line', False) # default False
