@@ -1503,7 +1503,7 @@ async def start_rx():
         #schedule.every().day.at("08:00").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 2, 0, 1))
 
         # Testing
-        schedule.every().day.at("07:35").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 0, 0, 1))
+        schedule.every().day.at("08:46").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 0, 0, 1))
         schedule.every(24).hours.do(lambda: send_message(sysinfo('sysinfo', 0, 1), 1, 0, 1))
 
 
