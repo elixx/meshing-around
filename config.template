@@ -60,6 +60,9 @@ ollama = False
 # ollamaModel = llama3.1
 # server instance to use (defaults to local machine install)
 ollamaHostName = http://localhost:11434
+# Produce LLM replies to messages that aren't commands?
+# If False, the LLM only replies to the "ask:" and "askai" commands.
+llmReplyToNonCommands = True
 
 # StoreForward Enabled and Limits
 StoreForward = True
@@ -84,6 +87,9 @@ sysloglevel = DEBUG
 # Number of log files to keep in days, 0 to keep all
 log_backup_count = 32
 
+#Do not retry enabling interface if it fails, just exit to let OS restart the bot
+dont_retry_disconnect = False
+
 [emergencyHandler]
 # enable or disable the emergency response handler
 enabled = False
@@ -103,6 +109,14 @@ SentryChannel = 2
 SentryHoldoff = 9
 # list of ignored nodes numbers ex: 2813308004,4258675309
 sentryIgnoreList = 
+# HighFlying Node alert
+highFlyingAlert = True
+# Altitude in meters to trigger the alert
+highFlyingAlertAltitude = 2000
+# Channel to send Alert when the high flying node is detected
+highFlyingAlertChannel = 2
+# list of nodes numbers to ignore high flying alert ex: 2813308004,4258675309
+highFlyingIgnoreList =
 
 [bbs]
 enabled = True
@@ -135,7 +149,7 @@ NOAAalertCount = 2
 # use Open-Meteo API for weather data not NOAA useful for non US locations
 UseMeteoWxAPI = False
 
-# NOAA Hydrology unique identifiers, LID or USGS ID
+# USGS Hydrology unique identifiers, LID or USGS ID https://waterdata.usgs.gov
 riverListDefault = 
 
 # NOAA EAS Alert Broadcast
@@ -150,16 +164,15 @@ enableExtraLocationWx = False
 
 # Goverment Alert Broadcast defaults to FEMA IPAWS
 eAlertBroadcastEnabled = False
+# comma separated list of FIPS codes to trigger local alert. find your FIPS codes at https://en.wikipedia.org/wiki/Federal_Information_Processing_Standard_state_code
+myFIPSList = 57,58,53
+# find your SAME https://www.weather.gov/nwr/counties comma separated list of SAME code to further refine local alert.
+mySAMEList = 053029,053073
 # Goverment Alert Broadcast Channels
 eAlertBroadcastCh = 2
-
-# FEMA Alert Broadcast Settings
-#  Enable Ignore any headline that includes following word list
+#  Enable Ignore, headline that includes following word list
 ignoreFEMAenable = True
 ignoreFEMAwords = test,exercise
-# comma separated list of codes (e.g., SAME,FIPS,ZIP) trigger local alert.
-# find your SAME https://www.weather.gov/nwr/counties
-mySAME = 053029,053073
 
 # USGS Volcano alerts Enable USGS Volcano Alert Broadcast
 volcanoAlertBroadcastEnabled = False
@@ -190,7 +203,7 @@ reverse_in_out = False
 # QRZ Hello to new nodes with message
 enabled = False
 qrz_db = data/qrz.db
-qrz_hello_string = "send CMD or DM me for more info."
+qrz_hello_string = "MeshBot says Hello! DM for more info."
 # Training mode will not send the hello message to new nodes
 training = True
 
@@ -283,15 +296,15 @@ hangman = True
 hamtest = True
 
 [messagingSettings]
-# delay in seconds for response to avoid message collision
-responseDelay = 1.2
-# delay in seconds for splits in messages to avoid message collision
-splitDelay = 0.0
+# delay in seconds for response to avoid message collision /throttling
+responseDelay = 2.2
+# delay in seconds for splits in messages to avoid message collision /throttling
+splitDelay = 2.5
 # message chunk size for sending at high success rate, chunkr allows exceeding by 3 characters
 MESSAGE_CHUNK_SIZE = 160
 # Request Acknowledgement of message OTA
 wantAck = False
-# Max limit buffer for radio testing. 233 is hard limit 2.5+ firmware
+# Max limit buffer for radio testing
 maxBuffer = 200
 #Enable Extra logging of Hop count data
 enableHopLogs = False

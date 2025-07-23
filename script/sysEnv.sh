@@ -29,5 +29,5 @@ else
     tempf=$(echo "scale=2; $temp * 9 / 5 + 32" | bc)
 fi
 
-# print telemetry data rounded to 2 decimal places
 printf "SysFree:%s DataFree:%s RAM:%.2f%% CPU:%.2f%% CPU-T:%.2f°C (%.2f°F)\n" "$free_space" "$free_space2" "$ram_usage" "$cpu_usage" "$temp" "$tempf"
+

@@ -38,6 +38,7 @@ Welcome to the Mesh Bot project! This feature-rich bot is designed to enhance yo
 
 ### Proximity Alerts
 - **Location-Based Alerts**: Get notified when members arrive back at a configured lat/long, perfect for remote locations like campsites.
+- **High Flying Alerts**: Get notified when nodes with high altitude are seen on mesh
 
 ### CheckList / Check In Out
 - **Asset Tracking**: Maintain a list of node/asset checkin and checkout. Usefull for accountability of people, assets. Radio-Net, FEMA, Trailhead.
@@ -147,7 +148,6 @@ enabled = True
 lat = 48.50
 lon = -123.0
 UseMeteoWxAPI = True
-riverListDefault = # NOAA Hydrology data, unique identifiers, LID or USGS ID
 ```
 
 ### Module Settings
@@ -181,6 +181,8 @@ SentryRadius = 100 # radius in meters to detect someone close to the bot
 SentryChannel = 9 # holdoff time multiplied by seconds(20) of the watchdog
 SentryHoldoff = 2 # channel to send a message to when the watchdog is triggered
 sentryIgnoreList = # list of ignored nodes numbers ex: 2813308004,4258675309
+highFlyingAlert = True # HighFlying Node alert
+highFlyingAlertAltitude = 2000 # Altitude in meters to trigger the alert
 ```
 
 ### E-Mail / SMS Settings
@@ -212,20 +214,21 @@ alert_interface = 1
 To Alert on Mesh with the EAS API you can set the channels and enable, checks every 20min.
 
 #### FEMA iPAWS/EAS and NINA
-This uses USA: SAME, FIPS, ZIP code to locate the alerts in the feed. By default ignoring Test messages.
+This uses USA: SAME, FIPS, to locate the alerts in the feed. By default ignoring Test messages.
 
 ```ini
 eAlertBroadcastEnabled = False # Goverment IPAWS/CAP Alert Broadcast
 eAlertBroadcastCh = 2,3 # Goverment Emergency IPAWS/CAP Alert Broadcast Channels
 ignoreFEMAenable = True # Ignore any headline that includes followig word list
 ignoreFEMAwords = test,exercise
-# comma separated list of codes (e.g., SAME,FIPS,ZIP) trigger local alert.
-# find your SAME https://www.weather.gov/nwr/counties
-mySAME = 053029,053073
+# comma separated list of FIPS codes to trigger local alert. find your FIPS codes at https://en.wikipedia.org/wiki/Federal_Information_Processing_Standard_state_code
+myFIPSList = 57,58,53
+# find your SAME https://www.weather.gov/nwr/counties comma separated list of SAME code to further refine local alert.
+mySAMEList = 053029,053073
 
 # To use other country services enable only a single optional serivce
-
 enableDEalerts = False # Use DE Alert Broadcast Data see template for filters
+myRegionalKeysDE = 110000000000,120510000000
 ```
 
 #### NOAA EAS
@@ -238,6 +241,20 @@ wxAlertBroadcastEnabled = True
 wxAlertBroadcastCh = 2,4
 ignoreEASenable = True # Ignore any headline that includes followig word list
 ignoreEASwords = test,advisory
+```
+
+#### USGS River flow data and Volcano alerts
+Using the USGS water data page locate a water flow device, for example Columbia River at Vancouver, WA - USGS-14144700
+
+Volcano Alerts use lat/long to determine ~1000km radius
+```ini
+[location]
+# USGS Hydrology unique identifiers, LID or USGS ID https://waterdata.usgs.gov
+riverListDefault = 14144700
+
+# USGS Volcano alerts Enable USGS Volcano Alert Broadcast
+volcanoAlertBroadcastEnabled = False
+volcanoAlertBroadcastCh = 2
 ```
 
 ### Repeater Settings
@@ -479,6 +496,7 @@ I used ideas and snippets from other responder bots and want to call them out!
 - **Josh**: For more bashing on installer!
 - **dj505**: trying it on windows!
 - **mikecarper**: ideas, and testing. hamtest
+- **c.merphy360**: high altitude alerts
 - **Cisien, bitflip, **Woof**, **propstg**, **trs2982**, **Josh** and Hailo1999**: For testing and feature ideas on Discord and GitHub.
 - **Meshtastic Discord Community**: For tossing out ideas and testing code.
 

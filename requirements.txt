@@ -11,3 +11,6 @@ schedule
 wikipedia
 googlesearch-python
 matterhook
+ollama
+ephem
+Pypubsub
