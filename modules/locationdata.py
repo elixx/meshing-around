@@ -467,6 +467,7 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
     # get the latest IPAWS alert from FEMA
     alert = ''
     alerts = []
+    linked_data = ''
     
     # set the API URL for IPAWS
     namespace = "urn:oasis:names:tc:emergency:cap:1.2"
@@ -490,23 +491,49 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
     # extract alerts from main feed
     for entry in alertxml.getElementsByTagName("entry"):
         link = entry.getElementsByTagName("link")[0].getAttribute("href")
+
+        ## state FIPS
+        ## This logic is being added to reduce load on FEMA server.
+        stateFips = None
+        for cat in entry.getElementsByTagName("category"):
+            if cat.getAttribute("label") == "statefips":
+                stateFips = cat.getAttribute("term")
+                break
+
+        if stateFips is None:
+            # no stateFIPS found — skip
+            continue
+
+        # check if it matches your list
+        if stateFips not in myStateFIPSList:
+            #logger.debug(f"Skipping FEMA record link {link} with stateFIPS code of: {stateFips} because it doesn't match our StateFIPSList {myStateFIPSList}")
+            continue  # skip to next entry
+
         try:
-            #pin check
-            if ipawsPIN != "000000":
-                link += "?pin=" + ipawsPIN
             # get the linked alert data from FEMA
             linked_data = requests.get(link, timeout=urlTimeoutSeconds)
-            if not linked_data.ok:
+            if not linked_data.ok or not linked_data.text.strip():
+                # if the linked data is not ok, skip this alert
                 #logger.warning(f"System: iPAWS Error fetching linked alert data from {link}")
                 continue
+            else:
+                linked_xml = xml.dom.minidom.parseString(linked_data.text)
+                # this alert is a full CAP alert
         except (requests.exceptions.RequestException):
             logger.warning(f"System: iPAWS Error fetching embedded alert data from {link}")
             continue
-        
-        # this alert is a full CAP alert
-        linked_xml = xml.dom.minidom.parseString(linked_data.text)
+        except xml.parsers.expat.ExpatError:
+            logger.warning(f"System: iPAWS Error parsing XML from {link}")
+            continue
+        except Exception as e:
+            logger.debug(f"System: iPAWS Error processing alert data from {link}: {e}")
+            continue
 
         for info in linked_xml.getElementsByTagName("info"):
+            # only get en-US language alerts (alternative is es-US)
+            language_nodes = info.getElementsByTagName("language")
+            if not any(node.firstChild and node.firstChild.nodeValue.strip() == "en-US" for node in language_nodes):
+                    continue  # skip if not en-US
             # extract values from XML
             sameVal = "NONE"
             geocode_value = "NONE"
@@ -524,12 +551,12 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
 
                 area_table = info.getElementsByTagName("area")[0]
                 areaDesc = area_table.getElementsByTagName("areaDesc")[0].childNodes[0].nodeValue
-                
                 geocode_table = area_table.getElementsByTagName("geocode")[0]
                 geocode_type = geocode_table.getElementsByTagName("valueName")[0].childNodes[0].nodeValue
                 geocode_value = geocode_table.getElementsByTagName("value")[0].childNodes[0].nodeValue
                 if geocode_type == "SAME":
                     sameVal = geocode_value
+
             except Exception as e:
                 logger.debug(f"System: iPAWS Error extracting alert data: {link}")
                 #print(f"DEBUG: {info.toprettyxml()}")
@@ -539,10 +566,15 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
             if (sameVal in mySAME) or (geocode_value in mySAME):
                 # ignore the FEMA test alerts
                 if ignoreFEMAenable:
+                    ignore_alert = False
                     for word in ignoreFEMAwords:
                         if word.lower() in headline.lower():
                             logger.debug(f"System: Ignoring FEMA Alert: {headline} containing {word} at {areaDesc}")
-                            continue
+                            ignore_alert = True
+                            break
+
+                    if ignore_alert:
+                        continue
 
                 # add to alerts list
                 alerts.append({
@@ -555,9 +587,9 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
                     'description': description
                 })
             else:
-                # these are discarded some day but logged for debugging currently
-                logger.debug(f"Debug iPAWS: Type:{alertType} Code:{alertCode} Desc:{areaDesc} GeoType:{geocode_type} GeoVal:{geocode_value}, Headline:{headline}")
-    
+                logger.debug(f"System: iPAWS Alert not in SAME List: {sameVal} or {geocode_value} for {headline} at {areaDesc}")
+                continue
+
     # return the numWxAlerts of alerts
     if len(alerts) > 0:
         for alertItem in alerts[:numWxAlerts]:
@@ -616,25 +648,9 @@ def get_flood_noaa(lat=0, lon=0, uid=0):
     
     # format the flood data
     logger.debug(f"System: NOAA Flood data for {str(uid)}")
-    flood_data = f" * {name}: "
-    # Primary Observed
-    if '-999' not in str(status_observed_primary):
-        flood_data += f"Observed: {status_observed_primary}{status_observed_primary_unit}"
-        # Secondary Observed
-        if '-999' not in str(status_observed_secondary):
-            flood_data += f"({status_observed_secondary}{status_observed_secondary_unit})"
-        # Observed Flood risk
-        if 'not_defined' not in status_observed_floodCategory and 'not_current' not in status_observed_floodCategory:
-            flood_data += f" risk: {status_observed_floodCategory}"
-    # Primary Forecast
-    if '-999' not in str(status_forecast_primary):
-        flood_data += f"\nForecast: {status_forecast_primary}{status_forecast_primary_unit}"
-        # Secondary Forecast
-        if '-999' not in str(status_forecast_secondary):
-            flood_data += f"({status_forecast_secondary}{status_forecast_secondary_unit})"
-        # Forecast Flood Risk
-        if 'not_defined' not in status_forecast_floodCategory and 'not_current' not in status_forecast_floodCategory:
-            flood_data += f" risk: {status_forecast_floodCategory} "
+    flood_data = f"Flood Data {name}:\n"
+    flood_data += f"Observed: {status_observed_primary}{status_observed_primary_unit}({status_observed_secondary}{status_observed_secondary_unit}) risk: {status_observed_floodCategory}"
+    flood_data += f"\nForecast: {status_forecast_primary}{status_forecast_primary_unit}({status_forecast_secondary}{status_forecast_secondary_unit}) risk: {status_forecast_floodCategory}"
 
     return flood_data
 
@@ -648,10 +664,10 @@ def get_volcano_usgs(lat=0, lon=0):
     try:
         volcano_data = requests.get(usgs_volcano_url, timeout=urlTimeoutSeconds)
         if not volcano_data.ok:
-            logger.warning("System: USGS fetching volcano alerts from USGS")
+            logger.warning("System: Issue with fetching volcano alerts from USGS")
             return ERROR_FETCHING_DATA
     except (requests.exceptions.RequestException):
-        logger.warning("System: USGS fetching volcano alerts from USGS")
+        logger.warning("System: Issue with fetching volcano alerts from USGS")
         return ERROR_FETCHING_DATA
     volcano_json = volcano_data.json()
     # extract alerts from main feed

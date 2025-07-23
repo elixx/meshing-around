@@ -217,15 +217,15 @@ def onReceive(packet, interface):
     
     if rxType == 'TCPInterface':
         rxHost = interface.__dict__.get('hostname', 'unknown')
-        if hostname1 in rxHost and interface1_type == 'tcp': rxNode = 1
-        elif multiple_interface and hostname2 in rxHost and interface2_type == 'tcp': rxNode = 2
-        elif multiple_interface and hostname3 in rxHost and interface3_type == 'tcp': rxNode = 3
-        elif multiple_interface and hostname4 in rxHost and interface4_type == 'tcp': rxNode = 4
-        elif multiple_interface and hostname5 in rxHost and interface5_type == 'tcp': rxNode = 5
-        elif multiple_interface and hostname6 in rxHost and interface6_type == 'tcp': rxNode = 6
-        elif multiple_interface and hostname7 in rxHost and interface7_type == 'tcp': rxNode = 7
-        elif multiple_interface and hostname8 in rxHost and interface8_type == 'tcp': rxNode = 8
-        elif multiple_interface and hostname9 in rxHost and interface9_type == 'tcp': rxNode = 9
+        if rxHost and hostname1 in rxHost and interface1_type == 'tcp': rxNode = 1
+        elif multiple_interface and rxHost and hostname2 in rxHost and interface2_type == 'tcp': rxNode = 2
+        elif multiple_interface and rxHost and hostname3 in rxHost and interface3_type == 'tcp': rxNode = 3
+        elif multiple_interface and rxHost and hostname4 in rxHost and interface4_type == 'tcp': rxNode = 4
+        elif multiple_interface and rxHost and hostname5 in rxHost and interface5_type == 'tcp': rxNode = 5
+        elif multiple_interface and rxHost and hostname6 in rxHost and interface6_type == 'tcp': rxNode = 6
+        elif multiple_interface and rxHost and hostname7 in rxHost and interface7_type == 'tcp': rxNode = 7
+        elif multiple_interface and rxHost and hostname8 in rxHost and interface8_type == 'tcp': rxNode = 8
+        elif multiple_interface and rxHost and hostname9 in rxHost and interface9_type == 'tcp': rxNode = 9
 
     if rxType == 'BLEInterface':
         if interface1_type == 'ble': rxNode = 1
@@ -310,7 +310,7 @@ def onReceive(packet, interface):
                 isDM = True
                 # check if the message contains a trap word, DMs are always responded to
                 if (messageTrap(message_string) and not llm_enabled) or messageTrap(message_string.split()[0]):
-                    # log the message to the message log
+                    # log the message to stdout
                     logger.info(f"Device:{rxNode} Channel: {channel_number} " + CustomFormatter.green + f"Received DM: " + CustomFormatter.white + f"{message_string} " + CustomFormatter.purple +\
                                 "From: " + CustomFormatter.white + f"{get_name_from_number(message_from_id, 'long', rxNode)}")
                     # respond with DM
@@ -321,7 +321,8 @@ def onReceive(packet, interface):
                     time.sleep(responseDelay)
                     
                     # log the message to the message log
-                    msgLogger.info(f"Device:{rxNode} Channel:{channel_number} | {get_name_from_number(message_from_id, 'long', rxNode)} | " + message_string.replace('\n', '-nl-'))
+                    if log_messages_to_file:
+                        msgLogger.info(f"Device:{rxNode} Channel:{channel_number} | {get_name_from_number(message_from_id, 'long', rxNode)} | DM | " + message_string.replace('\n', '-nl-'))
             else:
                 # message is on a channel
                 if messageTrap(message_string):
@@ -443,10 +444,11 @@ async def main():
 
     await asyncio.sleep(0.01)
 
-try:
-    if __name__ == "__main__":
+if __name__ == "__main__":
+    try:
         asyncio.run(main())
-except KeyboardInterrupt:
-    exit_handler()
-    pass
+    except KeyboardInterrupt:
+        exit_handler()
+    except SystemExit:
+        pass
 # EOF

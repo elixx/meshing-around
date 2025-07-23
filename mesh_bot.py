@@ -806,7 +806,7 @@ def handle_bbspost(message, message_from_id, deviceID):
                 toNode = int(toNode.strip("!"),16)
             except ValueError as e:
                 toNode = 0
-        elif toNode.isalpha() or not toNode.isnumeric():
+        elif toNode.isalpha() or not toNode.isnumeric() or len(toNode) < 5:
             # try short name
             toNode = get_num_from_short_name(toNode, deviceID)
 
@@ -1109,16 +1109,15 @@ def onReceive(packet, interface):
     
     if rxType == 'TCPInterface':
         rxHost = interface.__dict__.get('hostname', 'unknown')
-        if hostname1 in rxHost and interface1_type == 'tcp': rxNode = 1
-        elif multiple_interface and hostname2 in rxHost and interface2_type == 'tcp': rxNode = 2
-        elif multiple_interface and hostname3 in rxHost and interface3_type == 'tcp': rxNode = 3
-        elif multiple_interface and hostname4 in rxHost and interface4_type == 'tcp': rxNode = 4
-        elif multiple_interface and hostname5 in rxHost and interface5_type == 'tcp': rxNode = 5
-        elif multiple_interface and hostname6 in rxHost and interface6_type == 'tcp': rxNode = 6
-        elif multiple_interface and hostname7 in rxHost and interface7_type == 'tcp': rxNode = 7
-        elif multiple_interface and hostname8 in rxHost and interface8_type == 'tcp': rxNode = 8
-        elif multiple_interface and hostname9 in rxHost and interface9_type == 'tcp': rxNode = 9
-
+        if rxHost and hostname1 in rxHost and interface1_type == 'tcp': rxNode = 1
+        elif multiple_interface and rxHost and hostname2 in rxHost and interface2_type == 'tcp': rxNode = 2
+        elif multiple_interface and rxHost and hostname3 in rxHost and interface3_type == 'tcp': rxNode = 3
+        elif multiple_interface and rxHost and hostname4 in rxHost and interface4_type == 'tcp': rxNode = 4
+        elif multiple_interface and rxHost and hostname5 in rxHost and interface5_type == 'tcp': rxNode = 5
+        elif multiple_interface and rxHost and hostname6 in rxHost and interface6_type == 'tcp': rxNode = 6
+        elif multiple_interface and rxHost and hostname7 in rxHost and interface7_type == 'tcp': rxNode = 7
+        elif multiple_interface and rxHost and hostname8 in rxHost and interface8_type == 'tcp': rxNode = 8
+        elif multiple_interface and rxHost and hostname9 in rxHost and interface9_type == 'tcp': rxNode = 9
     if rxType == 'BLEInterface':
         if interface1_type == 'ble': rxNode = 1
         elif multiple_interface and interface2_type == 'ble': rxNode = 2
@@ -1227,7 +1226,7 @@ def onReceive(packet, interface):
                 isDM = True
                 # check if the message contains a trap word, DMs are always responded to
                 if (messageTrap(message_string) and not llm_enabled) or messageTrap(message_string.split()[0]):
-                    # log the message to the message log
+                    # log the message to stdout
                     logger.info(f"Device:{rxNode} Channel: {channel_number} " + CustomFormatter.green + f"Received DM: " + CustomFormatter.white + f"{message_string} " + CustomFormatter.purple +\
                                 "From: " + CustomFormatter.white + f"{get_name_from_number(message_from_id, 'long', rxNode)}")
                     # respond with DM
@@ -1245,7 +1244,7 @@ def onReceive(packet, interface):
                             playingGame = False
 
                     if not playingGame:
-                        if llm_enabled:
+                        if llm_enabled and llmReplyToNonCommands:
                             # respond with LLM
                             llm = handle_llm(message_from_id, channel_number, rxNode, message_string, publicChannel)
                             send_message(llm, channel_number, message_from_id, rxNode)
@@ -1274,7 +1273,8 @@ def onReceive(packet, interface):
                             time.sleep(responseDelay)
                             
                     # log the message to the message log
-                    msgLogger.info(f"Device:{rxNode} Channel:{channel_number} | {get_name_from_number(message_from_id, 'long', rxNode)} | " + message_string.replace('\n', '-nl-'))
+                    if log_messages_to_file:
+                        msgLogger.info(f"Device:{rxNode} Channel:{channel_number} | {get_name_from_number(message_from_id, 'long', rxNode)} | DM | " + message_string.replace('\n', '-nl-'))
             else:
                 # message is on a channel
                 if messageTrap(message_string):
@@ -1408,6 +1408,8 @@ async def start_rx():
         logger.debug(f"System: MOTD Enabled using {MOTD}")
     if sentry_enabled:
         logger.debug(f"System: Sentry Mode Enabled {sentry_radius}m radius reporting to channel:{secure_channel}")
+    if highfly_enabled:
+        logger.debug(f"System: HighFly Enabled using {highfly_altitude}m limit reporting to channel:{highfly_channel}")
     if store_forward_enabled:
         logger.debug(f"System: Store and Forward Enabled using limit: {storeFlimit}")
     if useDMForResponse:
@@ -1427,7 +1429,12 @@ async def start_rx():
     if wxAlertBroadcastEnabled:
         logger.debug(f"System: Weather Alert Broadcast Enabled on channels {wxAlertBroadcastChannel}")
     if emergencyAlertBrodcastEnabled:
-        logger.debug(f"System: Emergency Alert Broadcast Enabled on channels {emergencyAlertBroadcastCh}")
+        logger.debug(f"System: Emergency Alert Broadcast Enabled on channels {emergencyAlertBroadcastCh} for FIPS codes {myStateFIPSList}")
+        # check if the FIPS codes are set
+        if myStateFIPSList == ['']:
+            logger.warning(f"System: No FIPS codes set for iPAWS Alerts")
+
+
     if emergency_responder_enabled:
         logger.debug(f"System: Emergency Responder Enabled on channels {emergency_responder_alert_channel} for interface {emergency_responder_alert_interface}")
     if volcanoAlertBroadcastEnabled:
@@ -1502,8 +1509,8 @@ async def start_rx():
         #schedule.every().day.at("08:00").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 2, 0, 1))
 
         # Testing
-        schedule.every().day.at("06:45").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 0, 0, 1))
-        schedule.every(6).hours.do(lambda: send_message(sysinfo('sysinfo', 0, 1), 1, 0, 1))
+        schedule.every().day.at("08:46").do(lambda: send_message(handle_wxc(0, 1, 'wx'), 0, 0, 1))
+        schedule.every(24).hours.do(lambda: send_message(sysinfo('sysinfo', 0, 1), 1, 0, 1))
 
 
         # Send Weather Channel Notice Wed. Noon on channel 2, device 1
@@ -1556,10 +1563,11 @@ async def main():
 
     await asyncio.sleep(0.01)
 
-try:
-    if __name__ == "__main__":
+if __name__ == "__main__":
+    try:
         asyncio.run(main())
-except KeyboardInterrupt:
-    exit_handler()
-    pass
+    except KeyboardInterrupt:
+        exit_handler()
+    except SystemExit:
+        pass
 # EOF
