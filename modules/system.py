@@ -18,6 +18,7 @@ help_message = "Bot CMD?:"
 asyncLoop = asyncio.new_event_loop()
 games_enabled = False
 multiPingList = [{'message_from_id': 0, 'count': 0, 'type': '', 'deviceID': 0, 'channel_number': 0, 'startCount': 0}]
+interface_retry_count = 3
 
 # Ping Configuration
 if ping_enabled:
@@ -258,6 +259,7 @@ if ble_count > 1:
 logger.debug(f"System: Initializing Interfaces")
 interface1 = interface2 = interface3 = interface4 = interface5 = interface6 = interface7 = interface8 = interface9 = None
 retry_int1 = retry_int2 = retry_int3 = retry_int4 = retry_int5 = retry_int6 = retry_int7 = retry_int8 = retry_int9 = False
+max_retry_count1 = max_retry_count2 = max_retry_count3 = max_retry_count4 = max_retry_count5 = max_retry_count6 = max_retry_count7 = max_retry_count8 = max_retry_count9 = interface_retry_count
 for i in range(1, 10):
     interface_type = globals().get(f'interface{i}_type')
     if not interface_type or interface_type == 'none' or globals().get(f'interface{i}_enabled') == False:
@@ -283,7 +285,7 @@ for i in range(1, 10):
     if globals().get(f'interface{i}') and globals().get(f'interface{i}_enabled'):
         try:
             globals()[f'myNodeNum{i}'] = globals()[f'interface{i}'].getMyNodeInfo()['num']
-            logger.info(f"System: Initalized Radio Device{i} Node Number: {globals()[f'myNodeNum{i}']}")
+            logger.debug(f"System: Initalized Radio Device{i} Node Number: {globals()[f'myNodeNum{i}']}")
         except Exception as e:
             logger.critical(f"System: critical error initializing interface{i} {e}")
     else:
@@ -542,6 +544,15 @@ def messageChunker(message):
                             current_chunk = sentence
                 if current_chunk:
                     message_list.append(current_chunk)
+
+        # Consolidate any adjacent messages that can fit in a single chunk.
+        idx = 0
+        while idx < len(message_list) - 1:
+            if len(message_list[idx]) + len(message_list[idx+1]) < MESSAGE_CHUNK_SIZE:
+                message_list[idx] += '\n' + message_list[idx+1]
+                del message_list[idx+1]
+            else:
+                idx += 1
 
         # Ensure no chunk exceeds MESSAGE_CHUNK_SIZE
         final_message_list = []
@@ -824,41 +835,10 @@ def handleAlertBroadcast(deviceID=1):
                 return True
 
 def onDisconnect(interface):
-    global retry_int1, retry_int2, retry_int3, retry_int4, retry_int5, retry_int6, retry_int7, retry_int8, retry_int9
-    rxType = type(interface).__name__
-    if rxType in ['SerialInterface', 'TCPInterface', 'BLEInterface']:
-        identifier = interface.__dict__.get('devPath', interface.__dict__.get('hostname', 'BLE'))
-        logger.debug(f"System: Lost Connection to Device {identifier}")
-        for i in range(1, 10):
-            if globals().get(f'interface{i}_enabled'):
-                if (rxType == 'SerialInterface' and globals().get(f'port{i}') in identifier) or \
-                   (rxType == 'TCPInterface' and globals().get(f'hostname{i}') in identifier) or \
-                   (rxType == 'BLEInterface' and globals().get(f'interface{i}_type') == 'ble'):
-                    globals()[f'retry_int{i}'] = True
-                    break
-
-def exit_handler():
-    # Close the interface and save the BBS messages
-    logger.debug(f"System: Closing Autoresponder")
-    try:
-        logger.debug(f"System: Closing Interface1")
-        interface1.close()
-        if multiple_interface:
-            for i in range(2, 10):
-                if globals().get(f'interface{i}_enabled'):
-                    logger.debug(f"System: Closing Interface{i}")
-                    globals()[f'interface{i}'].close()
-    except Exception as e:
-        logger.error(f"System: closing: {e}")
-    if bbs_enabled:
-        save_bbsdb()
-        save_bbsdm()
-        logger.debug(f"System: BBS Messages Saved")
-    logger.debug(f"System: Exiting...")
-    send_webhook("Stopping...", emoji="stop_sign")
-    asyncLoop.stop()
-    asyncLoop.close()
-    exit (0)
+    # Handle disconnection of the interface
+    logger.warning(f"System: Abrupt Disconnection of Interface detected")
+    send_webhook("Disconnect detected!", emoji="stop_sign")
+    interface.close()
 
 # Telemetry Functions
 telemetryData = {}
@@ -1147,31 +1127,33 @@ async def retry_interface(nodeID):
         max_retry_count -= 1
         try:
             interface.close()
+            logger.debug(f"System: Retrying interface{nodeID} in 15 seconds")
         except Exception as e:
             logger.error(f"System: closing interface{nodeID}: {e}")
 
-    logger.critical("PUNT!")
-    exit(-1)
-    logger.debug(f"System: Retrying interface{nodeID} in 3 seconds")
-    if max_retry_count == 0:
+    if globals()[f'max_retry_count{nodeID}'] == 0:
         logger.critical(f"System: Max retry count reached for interface{nodeID}")
         exit_handler()
 
-    await asyncio.sleep(3)
+    await asyncio.sleep(15)
 
     try:
         if retry_int:
             interface = None
             globals()[f'interface{nodeID}'] = None
-            logger.debug(f"System: Retrying Interface{nodeID}")
             interface_type = globals()[f'interface{nodeID}_type']
             if interface_type == 'serial':
+                logger.debug(f"System: Retrying Interface{nodeID} Serial on port: {globals().get(f'port{nodeID}')}")
                 globals()[f'interface{nodeID}'] = meshtastic.serial_interface.SerialInterface(globals().get(f'port{nodeID}'))
             elif interface_type == 'tcp':
-                globals()[f'interface{nodeID}'] = meshtastic.tcp_interface.TCPInterface(globals().get(f'host{nodeID}'))
+                logger.debug(f"System: Retrying Interface{nodeID} TCP on hostname: {globals().get(f'hostname{nodeID}')}")
+                globals()[f'interface{nodeID}'] = meshtastic.tcp_interface.TCPInterface(globals().get(f'hostname{nodeID}'))
             elif interface_type == 'ble':
+                logger.debug(f"System: Retrying Interface{nodeID} BLE on mac: {globals().get(f'mac{nodeID}')}")
                 globals()[f'interface{nodeID}'] = meshtastic.ble_interface.BLEInterface(globals().get(f'mac{nodeID}'))
-            logger.warning(f"System: Interface{nodeID} Opened!")
+            logger.debug(f"System: Interface{nodeID} Opened!")
+            # reset the retry_int and retry_count
+            globals()[f'max_retry_count{nodeID}'] = interface_retry_count
             globals()[f'retry_int{nodeID}'] = False
     except Exception as e:
         logger.error(f"System: Error Opening interface{nodeID} on: {e}")
@@ -1259,6 +1241,27 @@ async def watchdog():
                 except Exception as e:
                     logger.error(f"System: retrying interface{i}: {e}")
 
+def exit_handler():
+    # Close the interface and save the BBS messages
+    logger.debug(f"System: Closing Autoresponder")
+    try:
+        logger.debug(f"System: Closing Interface1")
+        interface1.close()
+        if multiple_interface:
+            for i in range(2, 10):
+                if globals().get(f'interface{i}_enabled'):
+                    logger.debug(f"System: Closing Interface{i}")
+                    globals()[f'interface{i}'].close()
+    except Exception as e:
+        logger.error(f"System: closing: {e}")
+    if bbs_enabled:
+        save_bbsdb()
+        save_bbsdm()
+        logger.debug(f"System: BBS Messages Saved")
+    logger.debug(f"System: Exiting")
+    asyncLoop.stop()
+    asyncLoop.close()
+    exit (0)
 
 def handle_fortune():
     try:

@@ -148,7 +148,6 @@ enabled = True
 lat = 48.50
 lon = -123.0
 UseMeteoWxAPI = True
-riverListDefault = # NOAA Hydrology data, unique identifiers, LID or USGS ID
 ```
 
 ### Module Settings
@@ -215,20 +214,21 @@ alert_interface = 1
 To Alert on Mesh with the EAS API you can set the channels and enable, checks every 20min.
 
 #### FEMA iPAWS/EAS and NINA
-This uses USA: SAME, FIPS, ZIP code to locate the alerts in the feed. By default ignoring Test messages.
+This uses USA: SAME, FIPS, to locate the alerts in the feed. By default ignoring Test messages.
 
 ```ini
 eAlertBroadcastEnabled = False # Goverment IPAWS/CAP Alert Broadcast
 eAlertBroadcastCh = 2,3 # Goverment Emergency IPAWS/CAP Alert Broadcast Channels
 ignoreFEMAenable = True # Ignore any headline that includes followig word list
 ignoreFEMAwords = test,exercise
-# comma separated list of codes (e.g., SAME,FIPS,ZIP) trigger local alert.
-# find your SAME https://www.weather.gov/nwr/counties
-mySAME = 053029,053073
+# comma separated list of FIPS codes to trigger local alert. find your FIPS codes at https://en.wikipedia.org/wiki/Federal_Information_Processing_Standard_state_code
+myFIPSList = 57,58,53
+# find your SAME https://www.weather.gov/nwr/counties comma separated list of SAME code to further refine local alert.
+mySAMEList = 053029,053073
 
 # To use other country services enable only a single optional serivce
-
 enableDEalerts = False # Use DE Alert Broadcast Data see template for filters
+myRegionalKeysDE = 110000000000,120510000000
 ```
 
 #### NOAA EAS
@@ -241,6 +241,20 @@ wxAlertBroadcastEnabled = True
 wxAlertBroadcastCh = 2,4
 ignoreEASenable = True # Ignore any headline that includes followig word list
 ignoreEASwords = test,advisory
+```
+
+#### USGS River flow data and Volcano alerts
+Using the USGS water data page locate a water flow device, for example Columbia River at Vancouver, WA - USGS-14144700
+
+Volcano Alerts use lat/long to determine ~1000km radius
+```ini
+[location]
+# USGS Hydrology unique identifiers, LID or USGS ID https://waterdata.usgs.gov
+riverListDefault = 14144700
+
+# USGS Volcano alerts Enable USGS Volcano Alert Broadcast
+volcanoAlertBroadcastEnabled = False
+volcanoAlertBroadcastCh = 2
 ```
 
 ### Repeater Settings
