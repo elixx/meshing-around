@@ -283,7 +283,7 @@ for i in range(1, 10):
     if globals().get(f'interface{i}') and globals().get(f'interface{i}_enabled'):
         try:
             globals()[f'myNodeNum{i}'] = globals()[f'interface{i}'].getMyNodeInfo()['num']
-            logger.info(f"System: Initalized Radio Device{i} Node Number: {globals()[f'myNodeNum{i}']}")
+            logger.debug(f"System: Initalized Radio Device{i} Node Number: {globals()[f'myNodeNum{i}']}")
         except Exception as e:
             logger.critical(f"System: critical error initializing interface{i} {e}")
     else:
@@ -826,6 +826,7 @@ def handleAlertBroadcast(deviceID=1):
 def onDisconnect(interface):
     # Handle disconnection of the interface
     logger.warning(f"System: Abrupt Disconnection of Interface detected")
+    send_webhook("Disconnect detected!", emoji="stop_sign")
     interface.close()
 
 # Telemetry Functions
@@ -1105,19 +1106,14 @@ async def handleFileWatcher():
         pass
 
 async def retry_interface(nodeID):
-    global retry_int1, retry_int2, retry_int3, retry_int4, retry_int5, retry_int6, retry_int7, retry_int8, retry_int9
-    global max_retry_count1, max_retry_count2, max_retry_count3, max_retry_count4, max_retry_count5, max_retry_count6, max_retry_count7, max_retry_count8, max_retry_count9
+    global max_retry_count
     interface = globals()[f'interface{nodeID}']
     retry_int = globals()[f'retry_int{nodeID}']
-
-    if dont_retry_disconnect:
-        logger.critical(f"System: dont_retry_disconnect is set, not retrying interface{nodeID}")
-        exit_handler()
+    max_retry_count = globals()[f'max_retry_count{nodeID}']
 
     if interface is not None:
-        globals()[f'retry_int{nodeID}'] = True
-        globals()[f'max_retry_count{nodeID}'] -= 1
-        logger.debug(f"System: Retrying interface{nodeID} {globals()[f'max_retry_count{nodeID}']} attempts left")
+        retry_int = True
+        max_retry_count -= 1
         try:
             interface.close()
             logger.debug(f"System: Retrying interface{nodeID} in 15 seconds")

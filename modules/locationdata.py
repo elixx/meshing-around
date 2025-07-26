@@ -472,6 +472,8 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
     # set the API URL for IPAWS
     namespace = "urn:oasis:names:tc:emergency:cap:1.2"
     alert_url = "https://apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/feed"
+    if ipawsPIN != "000000":
+        alert_url += "?pin=" + ipawsPIN
 
     # get the alerts from FEMA
     try:
@@ -560,20 +562,21 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
                 #print(f"DEBUG: {info.toprettyxml()}")
                 continue
 
-             # check if the alert is for the SAME location, if wanted keep alert
-            if (sameVal in mySAMEList) or (geocode_value in mySAMEList) or mySAMEList == ['']:
+            # check if the alert is for the current location, if wanted keep alert
+            if (sameVal in mySAME) or (geocode_value in mySAME):
                 # ignore the FEMA test alerts
                 if ignoreFEMAenable:
                     ignore_alert = False
                     for word in ignoreFEMAwords:
                         if word.lower() in headline.lower():
-                            logger.debug(f"System: Filtering FEMA Alert by WORD: {headline} containing {word} at {areaDesc}")
+                            logger.debug(f"System: Ignoring FEMA Alert: {headline} containing {word} at {areaDesc}")
                             ignore_alert = True
                             break
-                if ignore_alert:
-                    continue
 
-                # add to alert list
+                    if ignore_alert:
+                        continue
+
+                # add to alerts list
                 alerts.append({
                     'alertType': alertType,
                     'alertCode': alertCode,
@@ -645,25 +648,9 @@ def get_flood_noaa(lat=0, lon=0, uid=0):
     
     # format the flood data
     logger.debug(f"System: NOAA Flood data for {str(uid)}")
-    flood_data = f" * {name}: "
-    # Primary Observed
-    if '-999' not in str(status_observed_primary):
-        flood_data += f"Observed: {status_observed_primary}{status_observed_primary_unit}"
-        # Secondary Observed
-        if '-999' not in str(status_observed_secondary):
-            flood_data += f"({status_observed_secondary}{status_observed_secondary_unit})"
-        # Observed Flood risk
-        if 'not_defined' not in status_observed_floodCategory and 'not_current' not in status_observed_floodCategory:
-            flood_data += f" risk: {status_observed_floodCategory}"
-    # Primary Forecast
-    if '-999' not in str(status_forecast_primary):
-        flood_data += f"\nForecast: {status_forecast_primary}{status_forecast_primary_unit}"
-        # Secondary Forecast
-        if '-999' not in str(status_forecast_secondary):
-            flood_data += f"({status_forecast_secondary}{status_forecast_secondary_unit})"
-        # Forecast Flood Risk
-        if 'not_defined' not in status_forecast_floodCategory and 'not_current' not in status_forecast_floodCategory:
-            flood_data += f" risk: {status_forecast_floodCategory} "
+    flood_data = f"Flood Data {name}:\n"
+    flood_data += f"Observed: {status_observed_primary}{status_observed_primary_unit}({status_observed_secondary}{status_observed_secondary_unit}) risk: {status_observed_floodCategory}"
+    flood_data += f"\nForecast: {status_forecast_primary}{status_forecast_primary_unit}({status_forecast_secondary}{status_forecast_secondary_unit}) risk: {status_forecast_floodCategory}"
 
     return flood_data
 
