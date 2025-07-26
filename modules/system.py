@@ -18,6 +18,7 @@ help_message = "Bot CMD?:"
 asyncLoop = asyncio.new_event_loop()
 games_enabled = False
 multiPingList = [{'message_from_id': 0, 'count': 0, 'type': '', 'deviceID': 0, 'channel_number': 0, 'startCount': 0}]
+interface_retry_count = 3
 
 # Ping Configuration
 if ping_enabled:
