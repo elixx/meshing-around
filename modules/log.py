@@ -11,19 +11,20 @@ if not LOGGING_LEVEL:
 LOGGING_LEVEL = getattr(logging, LOGGING_LEVEL)
 
 def send_webhook(message, emoji="radio"):
-    try:
-        mwh = Webhook(webhookUrl, webhookToken)
-        message = message.replace("Device","Dev")
-        message = message.replace("Channel","Ch")
-        message = message.replace("Recieved","Rx")
-        message = message.replace("Received", "Rx")
-        message = message.replace("Sending", "Tx")
-        message = message.replace("Interface", "Int")
-        message = message.replace("interface", "int")
-        notification = f":{emoji}: **MeshBot** {message}"
-        mwh.send(notification)
-    except Exception as e:
-        print(f"Error sending webook: {e}")
+    if webhookEnabled:
+        try:
+            mwh = Webhook(webhookUrl, webhookToken)
+            message = message.replace("Device","Dev")
+            message = message.replace("Channel","Ch")
+            message = message.replace("Recieved","Rx")
+            message = message.replace("Received", "Rx")
+            message = message.replace("Sending", "Tx")
+            message = message.replace("Interface", "Int")
+            message = message.replace("interface", "int")
+            notification = f":{emoji}: **MeshBot** {message}"
+            mwh.send(notification)
+        except Exception as e:
+            print(f"Error sending webook: {e}")
 
 class CustomFormatter(logging.Formatter):
     grey = '\x1b[38;21m'
@@ -97,23 +98,24 @@ if log_messages_to_file:
     file_handler.setFormatter(logging.Formatter(msgLogFormat))
     msgLogger.addHandler(file_handler)
 
-class CustomHandler(logging.Handler):
-    def __init__(self, callback):
-        super().__init__()
-        self.callback = callback
-        self.ansi_escape = re.compile(r'\x1b\[([0-9]+)(;[0-9]+)*m')
-    def format(self, record):
-        message = super().format(record).strip()
-        return self.ansi_escape.sub('', message)
-    def emit(self, record):
-        self.callback(self.format(record))
+if webhookEnabled:
+    class CustomHandler(logging.Handler):
+        def __init__(self, callback):
+            super().__init__()
+            self.callback = callback
+            self.ansi_escape = re.compile(r'\x1b\[([0-9]+)(;[0-9]+)*m')
+        def format(self, record):
+            message = super().format(record).strip()
+            return self.ansi_escape.sub('', message)
+        def emit(self, record):
+            self.callback(self.format(record))
 
-#webhookFormat = '%(levelname)8s - %(message)s'
-webhookFormat = '%(message)s'
-webhook_handler = CustomHandler(callback=send_webhook)
-webhook_handler.setLevel(logging.INFO)
-webhook_handler.setFormatter(plainFormatter(webhookFormat))
-logger.addHandler(webhook_handler)
+    #webhookFormat = '%(levelname)8s - %(message)s'
+    webhookFormat = '%(message)s'
+    webhook_handler = CustomHandler(callback=send_webhook)
+    webhook_handler.setLevel(eval("logging."+webhookLevel))
+    webhook_handler.setFormatter(plainFormatter(webhookFormat))
+    logger.addHandler(webhook_handler)
 
 # Pretty Timestamp
 def getPrettyTime(seconds):
