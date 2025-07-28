@@ -472,8 +472,6 @@ def getIpawsAlert(lat=0, lon=0, shortAlerts = False):
     # set the API URL for IPAWS
     namespace = "urn:oasis:names:tc:emergency:cap:1.2"
     alert_url = "https://apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/feed"
-    if ipawsPIN != "000000":
-        alert_url += "?pin=" + ipawsPIN
 
     # get the alerts from FEMA
     try:
